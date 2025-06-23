@@ -1,0 +1,115 @@
+# DB Capstone Project
+# SQL STATEMENTS
+
+####################################################################################################
+# Virtual table
+CREATE VIEW AS
+SELECT customers.CustomerID, customers.FullName, orders.OrderID, orders.TotalCost, menus.Courses
+FROM customers
+JOIN orders ON customers.CustomerID = orders.CustomerID
+JOIN menus ON menus.MenuID = orders.MenuID;
+
+
+###################################################################################################
+# Subquery statements
+
+SELECT *
+FROM Menus
+WHERE MenuID IN (
+    SELECT MenuID
+    FROM Orders
+    GROUP BY MenuID
+    HAVING COUNT(*) > 2
+);
+
+
+
+###################################################################################################
+# Prepare the statement
+
+PREPARE GetOrderDetail FROM 
+'SELECT OrderID, Quantity, TotalCost FROM orders WHERE CustomerID = ?';
+
+# Declare and set the variable
+
+SET @id = 2;
+
+# Execute the prepared statement using the variable
+
+EXECUTE GetOrderDetail USING @id;
+
+
+#####################################################################################
+# Procedure statement: CancelOrder
+
+DELIMITER //
+
+CREATE PROCEDURE CancelOrder(IN order_id INT)
+BEGIN
+    DELETE FROM Orders
+    WHERE OrderID = order_id;
+END //
+
+DELIMITER ;
+
+#######################################################################################
+
+INSERT INTO Bookings (CustomerID, BookingDate, TableNo, StaffID)
+SELECT CustomerID, BookingDate, TableNo, StaffID
+FROM Bookings
+WHERE BookingID = 1;
+
+###################################################################################
+# Procedure statement: AddBooking
+DELIMITER $$
+
+CREATE PROCEDURE AddBooking (
+    IN p_BookingID INT,
+    IN p_CustomerID INT,
+    IN p_BookingDate DATE,
+    IN p_TableNo INT,
+    IN p_StaffID INT
+)
+BEGIN
+    INSERT INTO Bookings (BookingID, CustomerID, BookingDate, TableNo, StaffID)
+    VALUES (p_BookingID, p_CustomerID, p_BookingDate, p_TableNo, p_StaffID);
+END $$
+
+DELIMITER ;
+
+
+################################################################################
+# Procedure statement: UpdateBooking
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateBooking (
+    IN booking_id INT,
+    IN newBookingDate DATE
+)
+BEGIN
+    UPDATE Bookings
+    SET BookingDate = newBookingDate
+    WHERE BookingID = booking_id;
+END //
+
+DELIMITER ;
+
+CALL UpdateBooking (9, '2022-12-17');
+
+
+
+#################################################################################
+# Procedure statement: CancelBooking
+
+DELIMITER //
+
+CREATE PROCEDURE CancelBooking (
+    IN booking_id INT
+)
+BEGIN
+    DELETE FROM Bookings
+    WHERE BookingID = booking_id;
+END //
+
+DELIMITER ;
